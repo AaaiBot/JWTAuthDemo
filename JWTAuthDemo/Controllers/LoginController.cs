@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 
 namespace JWTAuthDemo.Controllers
 {
-    // todo - seperate into 2x - an authorisation server (identity), and a protected resource server (everyday api)
     [Route("api/[controller]")]
     [ApiController]
     public class LoginController : ControllerBase
@@ -26,6 +25,7 @@ namespace JWTAuthDemo.Controllers
             this.config = config;
         }
 
+        [HttpGet]
         public IActionResult Login(string username, string password)
         {
             var login = new UserModel
@@ -48,20 +48,20 @@ namespace JWTAuthDemo.Controllers
         }
 
         [Authorize]
-        [HttpPost("Post")]
-        public string Post()
+        [HttpPost("Claims")]
+        public string Claims()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var claim = identity.Claims.ToList();
-            var username = claim[0].Value;
-            return $"Welcome to: {username}";
+            var claims = identity.Claims.ToList();
+            var username = claims[0].Value;
+            return $"{username} has these claims: {Environment.NewLine} {string.Join($"{Environment.NewLine} ", claims)}";
         }
 
-        [Authorize]
-        [HttpGet("GetValues")]
+        [Authorize(Policy = "ValuablesPolicy")]
+        [HttpGet("Valuables")]
         public ActionResult<IEnumerable<string>> Get()
         {
-            return new string[] { "Valule1", "Value2", "Value3" };
+            return new string[] { "Valuable1", "Valuable2", "Valuable3" };
         }
 
         private string GenerateJsonWebToken(UserModel userModel)
@@ -71,7 +71,8 @@ namespace JWTAuthDemo.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userModel.UserName),
+                new Claim("Permissions", "ValuablesReader"),
+                // new Claim(JwtRegisteredClaimNames.Sub, userModel.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, userModel.EmailAddress),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
