@@ -72,7 +72,7 @@ namespace JWTAuthDemo.Controllers
             var claims = new[]
             {
                 new Claim("Permissions", "ValuablesReader"),
-                // new Claim(JwtRegisteredClaimNames.Sub, userModel.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, userModel.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, userModel.EmailAddress),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
@@ -90,7 +90,7 @@ namespace JWTAuthDemo.Controllers
 
         private UserModel AuthenticateUser(UserModel login)
         {
-            // Simplified for demo
+            // Simplified for demo. This could be a select statement on a secured database instead.
             UserModel user = null;
             if (login.UserName == "richard" && login.Password == "123")
             {
