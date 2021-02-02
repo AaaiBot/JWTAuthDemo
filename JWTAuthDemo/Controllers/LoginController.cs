@@ -1,16 +1,11 @@
 ﻿using JWTAuthDemo.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace JWTAuthDemo.Controllers
 {
@@ -18,68 +13,43 @@ namespace JWTAuthDemo.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly IConfiguration config;
+        private readonly string _secretKey;
+        private readonly string _issuer;
 
-        public LoginController(IConfiguration config)
+        public LoginController(IConfiguration configuration)
         {
-            this.config = config;
+            _secretKey = configuration["Jwt:SecretKey"];
+            _issuer = configuration["Jwt:Issuer"];
         }
 
         [HttpGet]
         public IActionResult Login(string username, string password)
         {
-            var login = new UserModel
+            var user = GetUser(username, password);
+            if (user == null)
             {
-                UserName = username,
-                Password = password
-            };
-
-            IActionResult response = Unauthorized();
-
-            var user = AuthenticateUser(login);
-
-            if (user != null)
-            {
-                var tokenStr = GenerateJsonWebToken(user);
-                response = Ok(new { token = tokenStr });
+                return Unauthorized();
             }
 
-            return response;
+            return Ok(new { token = GenerateJwt(user) });
         }
 
-        [Authorize]
-        [HttpPost("Claims")]
-        public string Claims()
+        private string GenerateJwt(User user)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var claims = identity.Claims.ToList();
-            var username = claims[0].Value;
-            return $"{username} has these claims: {Environment.NewLine} {string.Join($"{Environment.NewLine} ", claims)}";
-        }
-
-        [Authorize(Policy = "ValuablesPolicy")]
-        [HttpGet("Valuables")]
-        public ActionResult<IEnumerable<string>> Get()
-        {
-            return new string[] { "Valuable1", "Valuable2", "Valuable3" };
-        }
-
-        private string GenerateJsonWebToken(UserModel userModel)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
                 new Claim("Permissions", "ValuablesReader"),
-                new Claim(JwtRegisteredClaimNames.Sub, userModel.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, userModel.EmailAddress),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var token = new JwtSecurityToken(
-                issuer: this.config["Jwt:Issuer"],
-                audience: this.config["Jwt:Issuer"],
+                issuer: _issuer,
+                audience: _issuer,
                 claims,
                 expires: DateTime.Now.AddMinutes(120),
                 signingCredentials: credentials);
@@ -88,16 +58,17 @@ namespace JWTAuthDemo.Controllers
             return encodedToken;
         }
 
-        private UserModel AuthenticateUser(UserModel login)
+        private User GetUser(string username, string password)
         {
-            // Simplified for demo. This could be a select statement on a secured database instead.
-            UserModel user = null;
-            if (login.UserName == "richard" && login.Password == "123")
+            // Dramatically simplified for demo!
+            if (username == "richard" && password == "123")
             {
-                user = new UserModel { UserName = "Richard", EmailAddress = "richard@abc.com" };
+                return new User { Username = "Richard", Email = "richard.sheridan@schoolofcode.co.uk" };
             }
-
-            return user;
+            else
+            {
+                return null;
+            }
         }
     }
 }
