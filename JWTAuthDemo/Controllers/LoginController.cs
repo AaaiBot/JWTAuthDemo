@@ -48,22 +48,6 @@ namespace JWTAuthDemo.Controllers
                         new Claim(JwtRegisteredClaimNames.Email, user.Email),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                     };
-                case "Student":
-                    return new[]
-                    {
-                        new Claim("Role", "Student"),
-                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                    };
-                case "Teacher":
-                    return new[]
-                    {
-                        new Claim("Role", "Teacher"),
-                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                    };
                 default:
                     throw new NotImplementedException();
             }
@@ -91,14 +75,6 @@ namespace JWTAuthDemo.Controllers
             if (username == "richard" && password == "123")
             {
                 return new User { Username = "Richard", Email = "richard.sheridan@schoolofcode.co.uk" };
-            }
-            if (username == "student" && password == "123")
-            {
-                return new User { Username = "Student", Email = "student@schoolofcode.co.uk" };
-            }
-            if (username == "teacher" && password == "123")
-            {
-                return new User { Username = "Teacher", Email = "teacher@schoolofcode.co.uk" };
             }
             else
             {
