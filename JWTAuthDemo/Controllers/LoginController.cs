@@ -31,11 +31,13 @@ namespace JWTAuthDemo.Controllers
                 return Unauthorized();
             }
 
-            return Ok(new { token = GenerateJwt(user, GetClaims(user)) });
+            var claims = GetClaims(user);
+            return Ok(new { token = GenerateJwt(claims) });
         }
 
         public IActionResult TeacherLogin(string username, string password)
         {
+            // will need different claims to the standard login
             throw new NotImplementedException();
         }
 
@@ -56,7 +58,7 @@ namespace JWTAuthDemo.Controllers
             };
         }
 
-        private string GenerateJwt(User user, Claim[] claims)
+        private string GenerateJwt(Claim[] claims)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
