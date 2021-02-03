@@ -49,6 +49,20 @@ namespace JWTAuthDemo
                         "ValuablesWriter", 
                         "Administrator" 
                     }));
+
+                options.AddPolicy("BlogWriter", policy =>
+                    policy.RequireClaim("Role", new[]
+                    {
+                        "Student",
+                        "Teacher"
+                    }));
+
+                options.AddPolicy("BlogAdministrator", policy =>
+                    policy.RequireClaim("Role", new[]
+                    {
+                        "Teacher"
+                    }));
+
             });
         }
 

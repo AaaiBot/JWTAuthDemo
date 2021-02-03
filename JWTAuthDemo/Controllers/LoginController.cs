@@ -35,27 +35,38 @@ namespace JWTAuthDemo.Controllers
             return Ok(new { token = GenerateJwt(claims) });
         }
 
-        public IActionResult TeacherLogin(string username, string password)
-        {
-            // will need different claims to the standard login
-            throw new NotImplementedException();
-        }
-
-        public IActionResult StudentLogin(string username, string password)
-        {
-            throw new NotImplementedException();
-        }
-
         private static Claim[] GetClaims(User user)
         {
-            // Claims can be either "custom" like "Permissions", or "reserved" lie the "JwtRegisteredClaimNames" defined in https://tools.ietf.org/html/rfc7519#section-4
-            return new[]
+            switch (user.Username)
             {
-                new Claim("Permissions", "ValuablesReader"),
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+                case "Richard":
+                    // Claims can be either "custom" like "Permissions", or "reserved" lie the "JwtRegisteredClaimNames" defined in https://tools.ietf.org/html/rfc7519#section-4
+                    return new[]
+                    {
+                        new Claim("Permissions", "ValuablesReader"),
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    };
+                case "Student":
+                    return new[]
+                    {
+                        new Claim("Role", "Student"),
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    };
+                case "Teacher":
+                    return new[]
+                    {
+                        new Claim("Role", "Teacher"),
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    };
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private string GenerateJwt(Claim[] claims)
@@ -80,6 +91,14 @@ namespace JWTAuthDemo.Controllers
             if (username == "richard" && password == "123")
             {
                 return new User { Username = "Richard", Email = "richard.sheridan@schoolofcode.co.uk" };
+            }
+            if (username == "student" && password == "123")
+            {
+                return new User { Username = "Student", Email = "student@schoolofcode.co.uk" };
+            }
+            if (username == "teacher" && password == "123")
+            {
+                return new User { Username = "Teacher", Email = "teacher@schoolofcode.co.uk" };
             }
             else
             {
