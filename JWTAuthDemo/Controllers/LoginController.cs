@@ -39,23 +39,28 @@ namespace JWTAuthDemo.Controllers
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _issuer,
+                audience: _issuer,
+                claims: GetClaims(user),
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: credentials);
+
+            var encodedJwtSecurityToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            return encodedJwtSecurityToken;
+        }
+
+        private static Claim[] GetClaims(User user)
+        {
+            // Add and remove claims here.
+            // Claims can be either "custom" like "Permissions", or "reserved" lie the "JwtRegisteredClaimNames" defined in https://tools.ietf.org/html/rfc7519#section-4
+            return new[]
             {
                 new Claim("Permissions", "ValuablesReader"),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-
-            var token = new JwtSecurityToken(
-                issuer: _issuer,
-                audience: _issuer,
-                claims,
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
-
-            var encodedToken = new JwtSecurityTokenHandler().WriteToken(token);
-            return encodedToken;
         }
 
         private User GetUser(string username, string password)
