@@ -42,7 +42,13 @@ namespace JWTAuthDemo
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ValuablesPolicy", policy => policy.RequireClaim("Permissions", new[] { "ValuablesReader", "ValuablesWriter", "Administrator" }));
+                options.AddPolicy("ValuablesPolicy", policy => 
+                    policy.RequireClaim("Permissions", new[] 
+                    { 
+                        "ValuablesReader", 
+                        "ValuablesWriter", 
+                        "Administrator" 
+                    }));
             });
         }
 
@@ -59,6 +65,7 @@ namespace JWTAuthDemo
             app.UseRouting();
 
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

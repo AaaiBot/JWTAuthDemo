@@ -31,28 +31,21 @@ namespace JWTAuthDemo.Controllers
                 return Unauthorized();
             }
 
-            return Ok(new { token = GenerateJwt(user) });
+            return Ok(new { token = GenerateJwt(user, GetClaims(user)) });
         }
 
-        private string GenerateJwt(User user)
+        public IActionResult TeacherLogin(string username, string password)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            throw new NotImplementedException();
+        }
 
-            var jwtSecurityToken = new JwtSecurityToken(
-                issuer: _issuer,
-                audience: _issuer,
-                claims: GetClaims(user),
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
-
-            var encodedJwtSecurityToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-            return encodedJwtSecurityToken;
+        public IActionResult StudentLogin(string username, string password)
+        {
+            throw new NotImplementedException();
         }
 
         private static Claim[] GetClaims(User user)
         {
-            // Add and remove claims here.
             // Claims can be either "custom" like "Permissions", or "reserved" lie the "JwtRegisteredClaimNames" defined in https://tools.ietf.org/html/rfc7519#section-4
             return new[]
             {
@@ -61,6 +54,22 @@ namespace JWTAuthDemo.Controllers
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+        }
+
+        private string GenerateJwt(User user, Claim[] claims)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _issuer,
+                audience: _issuer,
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: credentials);
+
+            var encodedJwtSecurityToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            return encodedJwtSecurityToken;
         }
 
         private User GetUser(string username, string password)
