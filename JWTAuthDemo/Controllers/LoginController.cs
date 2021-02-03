@@ -74,7 +74,7 @@ namespace JWTAuthDemo.Controllers
             return encodedJwtSecurityToken;
         }
 
-        private User GetUser(string username, string password)
+        private static User GetUser(string username, string password)
         {
             // Dramatically simplified for demo!
             if (username == "richard" && password == "123")
