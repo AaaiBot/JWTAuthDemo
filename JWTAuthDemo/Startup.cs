@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Text;
 
 namespace JWTAuthDemo
@@ -30,6 +31,7 @@ namespace JWTAuthDemo
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
+                        ClockSkew = TimeSpan.Zero,
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
@@ -42,23 +44,23 @@ namespace JWTAuthDemo
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ValuablesPolicy", policy => 
-                    policy.RequireClaim("Permissions", new[] 
-                    { 
-                        "ValuablesReader", 
-                        "ValuablesWriter", 
-                        "Administrator" 
+                options.AddPolicy("TrustedPerson", policy =>
+                    policy.RequireClaim("Permissions", new[]
+                    {
+                        "ValuablesReader",
+                        "ValuablesWriter",
+                        "Administrator"
                     }));
 
                 options.AddPolicy("BlogWriter", policy =>
-                    policy.RequireClaim("Role", new[]
+                    policy.RequireClaim("SchoolRole", new[]
                     {
                         "Student",
                         "Teacher"
                     }));
 
                 options.AddPolicy("BlogAdministrator", policy =>
-                    policy.RequireClaim("Role", new[]
+                    policy.RequireClaim("SchoolRole", new[]
                     {
                         "Teacher"
                     }));

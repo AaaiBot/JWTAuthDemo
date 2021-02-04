@@ -21,7 +21,7 @@ namespace JWTAuthDemo.Controllers
         [HttpGet("Blogs/{id}")]
         public ActionResult<string> ReadBlog(int id)
         {
-            return $"The blog with {id} for {GetName() ?? "[Unauthorised]"}";
+            return $"The blog with id {id} for {GetName() ?? "an unauthenticated user"}";
         }
 
         [Authorize(Policy = "BlogWriter")]
