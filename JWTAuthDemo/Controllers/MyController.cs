@@ -19,7 +19,7 @@ namespace JWTAuthDemo.Controllers
             return new string[] { "Freeby1", "Freeby2", "Freeby3" };
         }
 
-        [Authorize(Policy = "ValuablesPolicy")]
+        [Authorize(Policy = "TrustedPerson")]
         [HttpGet("Valuables")]
         public ActionResult<IEnumerable<string>> Get()
         {

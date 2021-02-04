@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Text;
 
 namespace JWTAuthDemo
@@ -36,18 +37,19 @@ namespace JWTAuthDemo
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = _issuer,
                         ValidAudience = _issuer,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)),
+                        ClockSkew = TimeSpan.Zero,
                     };
                 });
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ValuablesPolicy", policy => 
-                    policy.RequireClaim("Permissions", new[] 
-                    { 
-                        "ValuablesReader", 
-                        "ValuablesWriter", 
-                        "Administrator" 
+                options.AddPolicy("TrustedPerson", policy =>
+                    policy.RequireClaim("Permissions", new[]
+                    {
+                        "ValuablesReader",
+                        "ValuablesWriter",
+                        "Administrator"
                     }));
             });
         }

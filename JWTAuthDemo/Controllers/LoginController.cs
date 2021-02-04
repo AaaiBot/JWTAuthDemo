@@ -28,32 +28,14 @@ namespace JWTAuthDemo.Controllers
             var user = GetUser(username, password);
             if (user == null)
             {
-                return Unauthorized();
+                return Unauthorized("The username or password is incorrect");
             }
 
-            var claims = GetClaims(user);
-            return Ok(new { token = GenerateJwt(claims) });
+            var expiresOn = DateTime.Now.AddMinutes(120);
+            return Ok(new { token = GenerateJwt(user, expiresOn), expiresOn = $"{expiresOn:F}" });
         }
 
-        private static Claim[] GetClaims(User user)
-        {
-            switch (user.Username)
-            {
-                case "Richard":
-                    // Claims can be either "custom" like "Permissions", or "reserved" lie the "JwtRegisteredClaimNames" defined in https://tools.ietf.org/html/rfc7519#section-4
-                    return new[]
-                    {
-                        new Claim("Permissions", "ValuablesReader"),
-                        new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                    };
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        private string GenerateJwt(Claim[] claims)
+        private string GenerateJwt(User user, DateTime expiresOn)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -61,8 +43,8 @@ namespace JWTAuthDemo.Controllers
             var jwtSecurityToken = new JwtSecurityToken(
                 issuer: _issuer,
                 audience: _issuer,
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(120),
+                claims: user.Claims,
+                expires: expiresOn,
                 signingCredentials: credentials);
 
             var encodedJwtSecurityToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
@@ -74,13 +56,20 @@ namespace JWTAuthDemo.Controllers
             // Dramatically simplified for demo!
             if (username == "richard" && password == "123")
             {
-                return new User { Username = "Richard", Email = "richard.sheridan@schoolofcode.co.uk" };
+                return new User { 
+                    Username = username,
+                    Claims = new[]
+                    {
+                        // Claims can be either "custom" like "Permissions", or "reserved" lie the "JwtRegisteredClaimNames" defined in https://tools.ietf.org/html/rfc7519#section-4
+                        new Claim("Permissions", "ValuablesReader"),
+                        new Claim(JwtRegisteredClaimNames.Sub, username),
+                        new Claim(JwtRegisteredClaimNames.Email, "richard.sheridan@schoolofcode.co.uk"),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    }
+                };
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
     }
 }
-
